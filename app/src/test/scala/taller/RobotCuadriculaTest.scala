@@ -71,6 +71,28 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(ejecutar(Estado(5, 5, Oeste), Avanzar(2)) == Estado(3, 5, Oeste))
   }
 
+  test("ejecutar: girar a la derecha desde el este mira al sur") {
+    assert(ejecutar(inicial, Girar(Derecha)) == Estado(0, 0, Este) &&
+      ejecutar(Estado(0, 0, Este), Girar(Derecha)) == Estado(0, 0, Sur))
+  }
+
+  test("ejecutar: girar a la izquierda desde el sur mira al este") {
+    assert(ejecutar(Estado(2, 7, Sur), Girar(Izquierda)) == Estado(2, 7, Este))
+  }
+
+  test("ejecutar: dos repeticiones anidadas multiplican sus avances") {
+    assert(ejecutar(inicial, Repetir(2, Repetir(3, Avanzar(2)))) == Estado(0, 12, Norte))
+  }
+
+  test("ejecutar: repetir una secuencia gira y avanza en cada vuelta") {
+    val orden = Repetir(2, Secuencia(List(Girar(Derecha), Avanzar(3))))
+    assert(ejecutar(inicial, orden) == Estado(3, -3, Sur))
+  }
+
+  test("ejecutar: repetir una cantidad negativa no mueve al robot") {
+    assert(ejecutar(Estado(1, 2, Este), Repetir(-3, Avanzar(5))) == Estado(1, 2, Este))
+  }
+
   // Punto 3 -------------------------------------------------------------------
 
   test("cuantasBasicas: una orden básica cuenta uno") {

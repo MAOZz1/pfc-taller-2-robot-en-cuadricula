@@ -16,10 +16,10 @@ la nota.
 
 | Nombre completo | Código |
 |---|---|
-| | |
-| | |
-| | |
-| | |
+|Omar Riascos |2559990 |
+|Juan Vasquez | |
+|Santiago Villada | |
+|Manuel Ortiz | |
 
 ## Cómo está organizado el proyecto
 

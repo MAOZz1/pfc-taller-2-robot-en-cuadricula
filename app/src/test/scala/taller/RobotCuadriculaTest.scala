@@ -220,6 +220,122 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(transformar(cuadrado, (o: Orden) => o) == cuadrado)
   }
 
+  test("componer: componer tres órdenes anida las secuencias a la izquierda") {
+    val compuesta = componer(componer(Avanzar(1), Girar(Derecha)), Avanzar(2))
+    assert(compuesta == Secuencia(List(
+      Secuencia(List(Avanzar(1), Girar(Derecha))), Avanzar(2))))
+  }
+
+  test("componer: la compuesta ejecuta la primera dos veces y luego la segunda") {
+    val compuesta = componer(Repetir(2, Avanzar(1)), Girar(Izquierda))
+    assert(ejecutar(inicial, compuesta) == Estado(0, 2, Oeste))
+  }
+
+  test("rutina: repetir cero veces no produce ninguna vuelta") {
+    assert(ejecutar(Estado(4, 1, Este), rutina(2)(Izquierda)(0)) == Estado(4, 1, Este))
+  }
+
+  test("rutina: dos pasos al norte y luego mirar al oeste") {
+    assert(ejecutar(inicial, rutina(2)(Izquierda)(1)) == Estado(0, 2, Oeste))
+  }
+
+  test("aplicarA: cada estado avanza según su propia dirección") {
+    val estados = List(Estado(0, 0, Norte), Estado(0, 0, Este), Estado(0, 0, Oeste))
+    assert(aplicarA(estados, Avanzar(1)) ==
+      List(Estado(0, 1, Norte), Estado(1, 0, Este), Estado(-1, 0, Oeste)))
+  }
+
+  test("aplicarA: un giro deja las posiciones y cambia las direcciones") {
+    val estados = List(Estado(2, 3, Norte), Estado(2, 3, Sur))
+    assert(aplicarA(estados, Girar(Derecha)) ==
+      List(Estado(2, 3, Este), Estado(2, 3, Oeste)))
+  }
+
+  test("transformar: reemplaza también las básicas dentro de una secuencia") {
+    val giros = transformar(Secuencia(List(Avanzar(1), Girar(Derecha))), {
+      case Girar(Derecha) => Girar(Izquierda)
+      case otra => otra
+    })
+    assert(giros == Secuencia(List(Avanzar(1), Girar(Izquierda))))
+  }
+
+  test("transformar: aplica f a las básicas de las repeticiones anidadas") {
+    val todas = transformar(Repetir(2, Repetir(3, Avanzar(1))), {
+      case Avanzar(n) => Avanzar(n + 1)
+      case otra => otra
+    })
+    assert(todas == Repetir(2, Repetir(3, Avanzar(2))))
+  }
+
+  test("componer: con una secuencia vacía primero queda un anidamiento") {
+    assert(componer(Secuencia(Nil), Avanzar(1)) ==
+      Secuencia(List(Secuencia(Nil), Avanzar(1))))
+  }
+
+  test("componer: la segunda no se ejecuta si la compuesta se repite cero veces") {
+    assert(ejecutar(inicial, componer(Avanzar(5), Avanzar(3))) == Estado(0, 8, Norte) &&
+      ejecutar(inicial, Repetir(0, componer(Avanzar(5), Avanzar(3)))) == inicial)
+  }
+
+  test("componer: es asociativa al ejecutarse") {
+    val a = Avanzar(2)
+    val b = Girar(Derecha)
+    val c = Avanzar(3)
+    assert(ejecutar(inicial, componer(componer(a, b), c)) ==
+      ejecutar(inicial, componer(a, componer(b, c))))
+  }
+
+  test("rutina: tres vueltas dejan al robot mirando al oeste") {
+    assert(ejecutar(inicial, rutina(1)(Derecha)(3)) == Estado(1, 0, Oeste))
+  }
+
+  test("rutina: los pasos pueden ser negativos") {
+    assert(ejecutar(inicial, rutina(-2)(Derecha)(1)) == Estado(0, -2, Este))
+  }
+
+  test("rutina: la función currificada sirve para varios tamaños") {
+    val cierra = (veces: Int) => ejecutar(inicial, rutina(1)(Izquierda)(veces))
+    assert(cierra(4) == inicial && cierra(1) == Estado(0, 1, Oeste))
+  }
+
+  test("aplicarA: preserva el orden y el tamaño de la lista") {
+    val estados = List(Estado(0, 0, Norte), Estado(1, 1, Sur), Estado(2, 2, Este))
+    assert(aplicarA(estados, Avanzar(1)) ==
+      List(Estado(0, 1, Norte), Estado(1, 0, Sur), Estado(3, 2, Este)))
+  }
+
+  test("aplicarA: equivale a ejecutar sobre un solo estado") {
+    val estados = List(Estado(-3, 4, Oeste), Estado(5, -1, Sur))
+    assert(aplicarA(estados, Repetir(2, Avanzar(2))) ==
+      estados.map(e => ejecutar(e, Repetir(2, Avanzar(2)))))
+  }
+
+  test("aplicarA: una compuesta mueve cada estado a un sitio distinto") {
+    val estados = List(inicial, Estado(1, 0, Sur))
+    assert(aplicarA(estados, Secuencia(List(Girar(Derecha), Avanzar(3)))) ==
+      List(Estado(3, 0, Este), Estado(-2, 0, Oeste)))
+  }
+
+  test("transformar: no toca las compuestas vacías ni las de veces cero") {
+    assert(transformar(Secuencia(Nil), (o: Orden) => Avanzar(9)) == Secuencia(Nil) &&
+      transformar(Repetir(0, Avanzar(1)), (o: Orden) => Avanzar(9)) ==
+        Repetir(0, Avanzar(9)))
+  }
+
+  test("transformar: puede devolver otra clase de orden básica") {
+    val todoGira = transformar(Secuencia(List(Avanzar(1), Girar(Derecha))),
+      (o: Orden) => Girar(Izquierda))
+    assert(todoGira == Secuencia(List(Girar(Izquierda), Girar(Izquierda))))
+  }
+
+  test("transformar: recorre todas las ramas de una secuencia larga") {
+    val orden = Secuencia(List(Avanzar(1), Girar(Derecha), Repetir(2, Avanzar(1)),
+      Secuencia(List(Girar(Izquierda)))))
+    val sumando = transformar(orden, { case Avanzar(n) => Avanzar(n + 1); case otra => otra })
+    assert(sumando == Secuencia(List(Avanzar(2), Girar(Derecha), Repetir(2, Avanzar(2)),
+      Secuencia(List(Girar(Izquierda))))))
+  }
+
   // Punto 5 -------------------------------------------------------------------
 
   test("simplificar: dos avances seguidos se juntan") {

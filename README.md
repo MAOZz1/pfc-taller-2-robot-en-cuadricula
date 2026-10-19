@@ -19,7 +19,7 @@ la nota.
 |Omar Riascos |2559990 |
 |Juan Vasquez | |
 |Santiago Villada | |
-|David Lopez | |
+|Manuel Ortiz | |
 
 ## Cómo está organizado el proyecto
 

@@ -109,6 +109,53 @@ class RobotCuadriculaTest extends AnyFunSuite {
     assert(profundidad(Secuencia(List(Avanzar(1), cuadrado))) == 4)
   }
 
+  test("cuantasBasicas: un giro cuenta como una básica") {
+    assert(cuantasBasicas(Girar(Izquierda)) == 1)
+  }
+
+  test("cuantasBasicas: dos avances en secuencia suman dos") {
+    assert(cuantasBasicas(Secuencia(List(Avanzar(2), Avanzar(3)))) == 2)
+  }
+
+  test("cuantasBasicas: repetir tres veces un giro da tres básicas") {
+    assert(cuantasBasicas(Repetir(3, Girar(Derecha))) == 3)
+  }
+
+  test("cuantasBasicas: las secuencias anidadas suman todas sus básicas") {
+    val anidada = Secuencia(List(
+      Secuencia(List(Avanzar(1), Girar(Derecha))),
+      Secuencia(List(Secuencia(List(Avanzar(2)))))))
+    assert(cuantasBasicas(anidada) == 3)
+  }
+
+  test("cuantasBasicas: repetir una secuencia multiplica sus básicas") {
+    assert(cuantasBasicas(Repetir(3, Secuencia(List(Avanzar(1), Girar(Izquierda))))) == 6)
+  }
+
+  test("profundidad: un giro es una orden básica") {
+    assert(profundidad(Girar(Izquierda)) == 1)
+  }
+
+  test("profundidad: repetir una básica anida un nivel") {
+    assert(profundidad(Repetir(5, Avanzar(2))) == 2)
+  }
+
+  test("profundidad: repetir una secuencia anida dos niveles") {
+    assert(profundidad(Repetir(2, Secuencia(List(Avanzar(1), Girar(Derecha))))) == 3)
+  }
+
+  test("profundidad: una secuencia de secuencias vacías tiene profundidad 2") {
+    assert(profundidad(Secuencia(List(Secuencia(Nil), Secuencia(Nil)))) == 2)
+  }
+
+  test("profundidad: manda la rama más honda aunque haya varias") {
+    val orden = Secuencia(List(
+      Repetir(2, Repetir(3, Avanzar(1))),
+      Girar(Izquierda),
+      Secuencia(List(Avanzar(4)))))
+    assert(profundidad(orden) == 4)
+  }
+
   // Punto 4 -------------------------------------------------------------------
 
   test("componer: deja las dos órdenes en secuencia") {

@@ -8,16 +8,25 @@ import org.scalatestplus.junit.JUnitRunner
 class RobotCuadriculaTest extends AnyFunSuite {
 
   val r = new RobotCuadricula()
+
   import r._
 
   val cuadrado = Repetir(4, Secuencia(List(Avanzar(1), Girar(Derecha))))
 
   // Punto 1 -------------------------------------------------------------------
 
-  test("girar: Norte a la derecha da Este") { assert(girar(Norte, Derecha) == Este) }
-  test("girar: Norte a la izquierda da Oeste") { assert(girar(Norte, Izquierda) == Oeste) }
-  test("girar: Oeste a la derecha da Norte") { assert(girar(Oeste, Derecha) == Norte) }
-  test("girar: Sur a la izquierda da Este") { assert(girar(Sur, Izquierda) == Este) }
+  test("girar: Norte a la derecha da Este") {
+    assert(girar(Norte, Derecha) == Este)
+  }
+  test("girar: Norte a la izquierda da Oeste") {
+    assert(girar(Norte, Izquierda) == Oeste)
+  }
+  test("girar: Oeste a la derecha da Norte") {
+    assert(girar(Oeste, Derecha) == Norte)
+  }
+  test("girar: Sur a la izquierda da Este") {
+    assert(girar(Sur, Izquierda) == Este)
+  }
 
   test("girar: cuatro giros al mismo lado vuelven al principio") {
     val cuatro = List(Derecha, Derecha, Derecha, Derecha)
@@ -28,10 +37,18 @@ class RobotCuadriculaTest extends AnyFunSuite {
   test("girar: un giro y su contrario se cancelan") {
     assert(girar(girar(Este, Derecha), Izquierda) == Este)
   }
-  test("girar: Este a la derecha da Sur") { assert(girar(Este, Derecha) == Sur) }
-  test("girar: Este a la izquierda da Norte") { assert(girar(Este, Izquierda) == Norte) }
-  test("girar: Sur a la derecha da Oeste") { assert(girar(Sur, Derecha) == Oeste) }
-  test("girar: Oeste a la izquierda da Sur") { assert(girar(Oeste, Izquierda) == Sur) }
+  test("girar: Este a la derecha da Sur") {
+    assert(girar(Este, Derecha) == Sur)
+  }
+  test("girar: Este a la izquierda da Norte") {
+    assert(girar(Este, Izquierda) == Norte)
+  }
+  test("girar: Sur a la derecha da Oeste") {
+    assert(girar(Sur, Derecha) == Oeste)
+  }
+  test("girar: Oeste a la izquierda da Sur") {
+    assert(girar(Oeste, Izquierda) == Sur)
+  }
   test("girar: dos giros a la derecha equivalen a dos a la izquierda") {
     assert(girar(girar(Norte, Derecha), Derecha) == girar(girar(Norte, Izquierda), Izquierda))
   }
